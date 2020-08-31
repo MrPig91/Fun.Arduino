@@ -1,4 +1,6 @@
 {
     "board": "arduino:avr:nano",
-    "configuration": "cpu=atmega328"
+    "configuration": "cpu=atmega328",
+    "port": "COM15",
+    "sketch": "Projects\\Tic_Tac_Toe.ino"
 }

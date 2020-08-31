@@ -135,7 +135,12 @@ void loop() {
       MainMenuMove(maincursor);
     }
     else if (currentScreen == GamePlay){
-      MoveSquare(XPosition,YPosition);
+      if (maincursor == OnePlayer && currentPlayer == 'X'){
+         MoveSquare(XPosition,YPosition);
+      }
+      else{
+         MoveSquare(XPosition,YPosition);
+      }
     }
     else if (currentScreen == ModeSelection){
      SinglePlayerModeMove(currentDifficulty);
@@ -152,7 +157,12 @@ void loop() {
       NumberofPlayersSelected(maincursor);
     }
     else if (currentScreen == GamePlay){
-      SquareSelected(currentPlayer);
+      if (maincursor == OnePlayer && currentPlayer == 'X'){
+        SquareSelected(currentPlayer);
+      }
+      else{
+        SquareSelected(currentPlayer);
+      }
     }
     else if (currentScreen == ModeSelection){
       DifficultySelected();
@@ -228,25 +238,37 @@ void MoveSquare(GameSquareX XSquare, GameSquareY YSquare){
 void SquareSelected(char Player){
   display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
   if (Player == 'X'){
-    MarkMove('X',XPosition,YPosition);
-    if (CheckWinConditions()){
-      PlayVictorySong();
-      playeroneScore += 1;
-      ClearGameBoard();
-    }
-    else if (CheckForDraw()){
-      ClearGameBoard();
+    if (MarkMove('X',XPosition,YPosition)){
+      if (CheckWinConditions()){
+        PlayVictorySong();
+        playeroneScore += 1;
+        ClearGameBoard();
+        SwitchPlayer(Player);
+      }
+      else if (CheckForDraw()){
+        ClearGameBoard();
+        SwitchPlayer(Player);
+      }
+      else{
+        SwitchPlayer(Player);
+      }
     }
   }
   else{
-    MarkMove('O',XPosition,YPosition);
-    if (CheckWinConditions()){
-      PlayVictorySong();
-      playertwoScore += 1;
-      ClearGameBoard();
-    }
-    else if (CheckForDraw()){
+    if (MarkMove('O',XPosition,YPosition)){
+      if (CheckWinConditions()){
+        PlayVictorySong();
+        playertwoScore += 1;
+        ClearGameBoard();
+        SwitchPlayer(Player);
+      }
+      else if (CheckForDraw()){
        ClearGameBoard();
+       SwitchPlayer(Player);
+      }
+      else{
+        SwitchPlayer(Player);
+      }
     }
   }
   SelectSquare(Left,Top);
@@ -284,7 +306,7 @@ void ClearGameBoard(){
   }
 }
 
-void MarkMove(char XorY,GameSquareX XSquare, GameSquareY YSquare){
+bool MarkMove(char XorY,GameSquareX XSquare, GameSquareY YSquare){
   int XYposition = 0;
   int x;
   int y;
@@ -294,18 +316,21 @@ void MarkMove(char XorY,GameSquareX XSquare, GameSquareY YSquare){
         if (allPositions[XYposition] == NULL){
          DrawXorO(XorY,XPosition,YPosition);
          allPositions[XYposition] = XorY;
-         SwitchPlayer(XorY);
-         return; 
+         return true; 
         }
       }
       XYposition++;
     }
   }
+  return false;
 }
 
 void SwitchPlayer(char XorYPlayer){
   if (XorYPlayer == 'X'){
     currentPlayer = 'O';
+    if (maincursor == OnePlayer){
+      BotMove();
+    }
   }
   else{
     currentPlayer = 'X';
@@ -407,6 +432,7 @@ void DrawSinglePlayerModeSelectionScreen(){
   display.display();
   currentDifficulty = Easy;
 }
+
 void SinglePlayerModeMove(BotDifficulty current){
   if (current == Easy){
     display.fillRect(0,20,127,20, SSD1306_INVERSE);
@@ -462,4 +488,48 @@ void BestOfSelected(){
     ClearGameBoard();
     currentScreen = GamePlay;
     SelectSquare(Left,Top);
+}
+
+void BotMove(){
+  //Chose random SquareSelected
+  //delay(500);
+  int randomNumber = random(0,8);
+  int randomSquareX;
+  int randomSquareY;
+  switch (randomNumber){
+  case 0:
+    randomSquareX = 0;randomSquareY = 0;
+    break;
+  case 1:
+    randomSquareX = 1;randomSquareY = 0;
+    break;
+  case 2:
+    randomSquareX = 2;randomSquareY = 0;
+    break;
+  case 3:
+    randomSquareX = 0;randomSquareY = 1;
+    break;
+  case 4:
+    randomSquareX = 1;randomSquareY = 1;
+    break;
+  case 5:
+    randomSquareX = 2;randomSquareY = 1;
+    break;
+  case 6:
+    randomSquareX = 0;randomSquareY = 2;
+    break;
+  case 7:
+    randomSquareX = 1;randomSquareY = 2;
+    break;
+  case 8:
+    randomSquareX = 2;randomSquareY = 2;
+  }
+  XPosition = allXPositions[randomSquareX];
+  YPosition = allYPositions[randomSquareY];
+  display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
+  SquareSelected(currentPlayer);
+  if (currentPlayer == 'O'){
+    BotMove();
+  }
+  display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
 }
