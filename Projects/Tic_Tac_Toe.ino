@@ -242,6 +242,9 @@ void SquareSelected(char Player){
       if (CheckWinConditions()){
         PlayVictorySong();
         playeroneScore += 1;
+        if (CheckBestofCount()){
+          return;
+        }
         ClearGameBoard();
         SwitchPlayer(Player);
       }
@@ -259,6 +262,9 @@ void SquareSelected(char Player){
       if (CheckWinConditions()){
         PlayVictorySong();
         playertwoScore += 1;
+        if (CheckBestofCount()){
+          return;
+        }
         ClearGameBoard();
         SwitchPlayer(Player);
       }
@@ -532,4 +538,41 @@ void BotMove(){
     BotMove();
   }
   display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
+}
+
+bool CheckBestofCount(){
+  if (currentBestOf == three){
+    if (playeroneScore == 2){
+      ReturnToMainMenu();
+      return true;
+    }
+    else if (playertwoScore == 2){
+      ReturnToMainMenu();
+      return true;
+    }
+  }
+  else if (currentBestOf == five){
+        if (playeroneScore == 3){
+      ReturnToMainMenu();
+      return true;
+    }
+    else if (playertwoScore == 3){
+      ReturnToMainMenu();
+      return true;
+    }
+  }
+  return false;
+}
+
+void ReturnToMainMenu(){
+  int i;
+  display.clearDisplay();
+    for (i = 0;i<=8;i++){
+    allPositions[i] = NULL;
+  }
+  currentPlayer = 'X';
+  currentScreen = Main;
+  DrawStartMenu();
+  display.fillRect(0,20,127,20, SSD1306_INVERSE);
+  display.display();
 }
