@@ -28,15 +28,32 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 //Music
 int speakerPin = 9;
-//Note Array
+
 int notes[] = {
- NOTE_B5, 0, NOTE_B5, 0, NOTE_B5, 0, NOTE_B5, 
- NOTE_G5, NOTE_A5, NOTE_B5, 0, NOTE_A5, NOTE_B5
+   NOTE_B5, 0, NOTE_B5, 0, NOTE_B5, 0, NOTE_B5, 
+  NOTE_G5, NOTE_A5, NOTE_B5, 0, NOTE_A5, NOTE_B5,
+  NOTE_FS5, NOTE_E5, NOTE_FS5, NOTE_E5, 0,
+  NOTE_A5, NOTE_A5, 0, NOTE_GS5, NOTE_A5,
+  0, NOTE_GS5, NOTE_GS5, 0, NOTE_FS5,
+  NOTE_E5, NOTE_DS5, NOTE_E5, 0, NOTE_CS5,
+  NOTE_FS5, NOTE_E5, NOTE_FS5, NOTE_E5, 0,
+  NOTE_A5, NOTE_A5, 0, NOTE_GS5, NOTE_A5,
+  0, NOTE_GS5, NOTE_GS5, 0, NOTE_FS5,
+  NOTE_E5, NOTE_FS5, NOTE_A5, 0, NOTE_B5
 };
-//The Duration of each note (in ms)
+
+//duration of each note
 int times[] = {
- 53, 53, 53, 53, 53, 53, 428,
- 428, 428, 107, 214, 107, 857
+   53, 53, 53, 53, 53, 53, 428,
+  428, 428, 107, 214, 107, 857,
+  428, 428, 428, 107, 107,
+  428, 107, 107, 428, 107,
+  107, 428, 107, 107, 428,
+  428, 428, 107, 107, 1714,
+  428, 428, 428, 107, 107,
+  428, 107, 107, 428, 107,
+  107, 428, 107, 107, 428,
+  428, 428, 107, 107, 1714
 };
 
 //MainMenu Variables
@@ -240,11 +257,11 @@ void SquareSelected(char Player){
   if (Player == 'X'){
     if (MarkMove('X',XPosition,YPosition)){
       if (CheckWinConditions()){
-        PlayVictorySong();
         playeroneScore += 1;
         if (CheckBestofCount()){
           return;
         }
+        PlayVictorySong(false);
         ClearGameBoard();
         SwitchPlayer(Player);
       }
@@ -260,11 +277,11 @@ void SquareSelected(char Player){
   else{
     if (MarkMove('O',XPosition,YPosition)){
       if (CheckWinConditions()){
-        PlayVictorySong();
         playertwoScore += 1;
         if (CheckBestofCount()){
           return;
         }
+        PlayVictorySong(false);
         ClearGameBoard();
         SwitchPlayer(Player);
       }
@@ -335,7 +352,7 @@ void SwitchPlayer(char XorYPlayer){
   if (XorYPlayer == 'X'){
     currentPlayer = 'O';
     if (maincursor == OnePlayer){
-      BotMove();
+      BotMove(currentDifficulty);
     }
   }
   else{
@@ -379,16 +396,27 @@ bool CheckForDraw(){
   return true;
 }
 
-void PlayVictorySong(){
-  for (int i = 0; i < 13; i++)
- {
-  tone(speakerPin, notes[i], times[i]);
-  delay(times[i]);
- }
- noTone(speakerPin);
+void PlayVictorySong(bool fullversion){
+  if (fullversion){
+      for (int i = 0; i < 53; i++)
+      {
+        tone(speakerPin, notes[i], times[i]);
+        delay(times[i]);
+      }
+      noTone(speakerPin);
+  }
+  else{
+      for (int i = 0; i < 13; i++)
+      {
+        tone(speakerPin, notes[i], times[i]);
+        delay(times[i]);
+      }
+      noTone(speakerPin);
+  }
 }
 
 void DrawStartMenu(){
+  display.clearDisplay();
   display.setTextSize(1);
   display.setCursor(25,9);
   display.print("Tic-Tac-Toe");
@@ -496,48 +524,29 @@ void BestOfSelected(){
     SelectSquare(Left,Top);
 }
 
-void BotMove(){
-  //Chose random SquareSelected
-  //delay(500);
-  int randomNumber = random(0,8);
-  int randomSquareX;
-  int randomSquareY;
-  switch (randomNumber){
-  case 0:
-    randomSquareX = 0;randomSquareY = 0;
-    break;
-  case 1:
-    randomSquareX = 1;randomSquareY = 0;
-    break;
-  case 2:
-    randomSquareX = 2;randomSquareY = 0;
-    break;
-  case 3:
-    randomSquareX = 0;randomSquareY = 1;
-    break;
-  case 4:
-    randomSquareX = 1;randomSquareY = 1;
-    break;
-  case 5:
-    randomSquareX = 2;randomSquareY = 1;
-    break;
-  case 6:
-    randomSquareX = 0;randomSquareY = 2;
-    break;
-  case 7:
-    randomSquareX = 1;randomSquareY = 2;
-    break;
-  case 8:
-    randomSquareX = 2;randomSquareY = 2;
+void BotMove(BotDifficulty difficulty){
+  if (difficulty == Easy){
+    int randomNumber = random(0,8);
+    TranslateLocation(randomNumber);
+    display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
+    SquareSelected(currentPlayer);
+    if (currentPlayer == 'O'){
+      BotMove(Easy);
+    }
+    display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
   }
-  XPosition = allXPositions[randomSquareX];
-  YPosition = allYPositions[randomSquareY];
-  display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
-  SquareSelected(currentPlayer);
-  if (currentPlayer == 'O'){
-    BotMove();
+  else if (difficulty == Hard){
+    int value = BotMoveHard();
+    if (value == 9){
+      BotMove(Easy);
+    }
+    else{
+      TranslateLocation(value);
+      display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
+      SquareSelected(currentPlayer);
+      display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
+    }
   }
-  display.fillRect((XPosition - 3),(YPosition - 1), 15, 15, SSD1306_INVERSE);
 }
 
 bool CheckBestofCount(){
@@ -570,9 +579,120 @@ void ReturnToMainMenu(){
     for (i = 0;i<=8;i++){
     allPositions[i] = NULL;
   }
+  DrawWinner();
   currentPlayer = 'X';
   currentScreen = Main;
+  display.clearDisplay();
+  display.stopscroll();
   DrawStartMenu();
   display.fillRect(0,20,127,20, SSD1306_INVERSE);
   display.display();
+}
+
+void DrawWinner(){
+  display.clearDisplay();
+  display.setCursor(10,10);
+  if (currentPlayer == 'X'){
+    display.println("Player X");
+    display.setCursor(30,30);
+    display.println("Wins!!");
+    display.display();
+    delay(1000);
+    display.startscrollleft(0x00, 0x0F);
+    PlayVictorySong(true);
+  }
+  else{
+    display.print("Player O");
+    display.setCursor(30,30);
+    display.println("Wins!!");
+    display.display();
+    delay(1000);
+    display.startscrollleft(0x00, 0x0F);
+    PlayVictorySong(true);
+  }
+}
+
+int BotMoveHard(){
+  int x;
+  for (x = 0; x<=8; x += 3){
+      if (allPositions[x] == NULL && allPositions[x+1] == allPositions[x+2] && allPositions[x+1] != NULL){
+        return x;
+      }
+      else if (allPositions[x+1] == NULL && allPositions[x] == allPositions[x+2] && allPositions[x] != NULL){
+        return x+1;
+      }
+      else if (allPositions[x+2] == NULL && allPositions[x] == allPositions[x+1] && allPositions[x] != NULL){
+        return x+2;
+      }
+  }
+  for (x = 0; x <= 2; x++){
+    if (allPositions[x] == NULL && allPositions[x+3] == allPositions[x + 6] && allPositions[x+3] == NULL){
+      return x;
+    }
+    else if (allPositions[x+3] == NULL && allPositions[x] == allPositions[x+6] && allPositions[x] != NULL){
+        return x+3;
+    }
+    else if (allPositions[x+6] == NULL && allPositions[x] == allPositions[x+3] && allPositions[x] != NULL){
+        return x+6;
+    }
+  }
+  if (allPositions[0] == NULL && allPositions[4] == allPositions[8] && allPositions[4] != NULL){
+    return 0;
+  }
+  else if (allPositions[4] == NULL && allPositions[0] == allPositions[8] && allPositions[0] != NULL){
+    return 4;
+  }
+  else if (allPositions[8] == NULL && allPositions[0] == allPositions[4] && allPositions[4] != NULL){
+    return 8;
+  }
+  else if (allPositions[2] == NULL && allPositions[4] == allPositions[6] && allPositions[4] != NULL){
+    return 2;
+  }
+  else if (allPositions[4] == NULL && allPositions[2] == allPositions[6] && allPositions[2] != NULL){
+    return 4;
+  }
+  else if (allPositions[6] == NULL && allPositions[2] == allPositions[4] && allPositions[4] != NULL){
+    return 6;
+  }
+  return 9;
+}
+void TranslateLocation(int x){
+  switch (x){
+    case 0:
+      XPosition = allXPositions[0];
+      YPosition = allYPositions[0];
+      break;
+    case 1:
+      XPosition = allXPositions[0];
+      YPosition = allYPositions[1];
+      break;
+    case 2:
+      XPosition = allXPositions[0];
+      YPosition = allYPositions[2];
+      break;
+    case 3:
+      XPosition = allXPositions[1];
+      YPosition = allYPositions[0];
+      break;
+    case 4:
+      XPosition = allXPositions[1];
+      YPosition = allYPositions[1];
+      break;
+    case 5:
+      XPosition = allXPositions[1];
+      YPosition = allYPositions[2];
+      break;
+    case 6:
+      XPosition = allXPositions[2];
+      YPosition = allYPositions[0];
+      break;
+    case 7:
+      XPosition = allXPositions[2];
+      YPosition = allYPositions[1];
+      break;
+    case 8:
+      XPosition = allXPositions[2];
+      YPosition = allYPositions[2];
+      break;
+  }
 }
