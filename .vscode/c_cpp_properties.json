@@ -3,6 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
+                "C:\\Users\\Syrius Cleveland\\Documents\\Arduino\\libraries\\TimerOne\\**",
                 "C:\\Users\\Syrius Cleveland\\AppData\\Local\\Arduino15\\packages\\esp8266\\tools\\**",
                 "C:\\Users\\Syrius Cleveland\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\2.7.4\\**",
                 "C:\\Program Files (x86)\\Arduino\\tools\\**",
@@ -14,12 +15,15 @@
                 "C:\\Program Files (x86)\\Arduino\\**",
                 "C:\\Users\\Syrius Cleveland\\Documents\\Arduino\\**",
                 "C:\\Users\\Syrius Cleveland\\AppData\\Local\\Arduino15\\staging\\libraries\\**",
-                "C:\\WinAVR-20100110\\**"
+                "C:\\WinAVR-20100110\\**",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\tools\\**",
+                "C:\\Users\\Syrius Cleveland\\Documents\\Arduino\\libraries\\**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "USBCON"
             ],
             "intelliSenseMode": "msvc-x64",
             "forcedInclude": [
