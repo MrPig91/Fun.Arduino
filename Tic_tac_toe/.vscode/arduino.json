@@ -1,5 +1,0 @@
-{
-    "board": "arduino:avr:uno",
-    "port": "COM3",
-    "sketch": "Projects\\Tic_tac_toe\\Tic_Tac_Toe.ino"
-}
